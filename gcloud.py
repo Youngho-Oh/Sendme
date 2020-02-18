@@ -57,17 +57,24 @@ def _checkUploadMetafileID(filename, filepath):
     #print("bbbbbbbbbbbbb")
     return metafileID
 
-def _listFiles(size):
-    print("aaaaaa")
+def _listFiles(strings=""):
+    #print("aaaaaa")
     #results = drive_service.files().list(pageSize=size,fields="nextPageToken, files(id, name)").execute()
     results = drive_service.files().list(fields="nextPageToken, files(id, name)").execute()
     items = results.get('files', [])
-    if not items:
-        print('No files found.')
-    else:
-        print('Files:')
+    if items:
+    #if not items:
+        #print('No files found.')
+    #else:
         for item in items:
-            print("%s, %s" % (item['name'], item['id']))
+            if strings == item['name'] :
+                print("%s" % item['id'])
+                return item['id']
+            elif strings == item['id'] :
+                print("%s" % item['name'])
+                return item['id']
+            elif strings == "" :
+                print("%s, %s" % (item['name'], item['id']))
 
 def _uploadFile(filename,filepath,mimetype):
     file_metadata = {'name': filename}
@@ -78,7 +85,7 @@ def _uploadFile(filename,filepath,mimetype):
                                         media_body=media,
                                         fields='id').execute()
     print('File ID: %s' % file.get('id'))
-    _localWriteFile(filename, filepath, file.get('id'))
+    #_localWriteFile(filename, filepath, file.get('id'))
 
 def _deleteFile(fileid):
     is_success = 0
@@ -135,7 +142,7 @@ def main(method, length) :
 
     cmd = method[1]
 
-    print(cmd)
+    #print(cmd)
     if cmd == 'upload':
         if length == 5:
             _uploadFile(method[2], method[3], method[4])
@@ -146,16 +153,20 @@ def main(method, length) :
         else:
             print("ERROR : ./main.py upload [filename] [path of file] [file type]")
     elif cmd == 'list':
-        _listFiles(100)
+        if length == 2:
+            _listFiles()
+        elif length == 3:
+            #print(method[2])
+            _listFiles(method[2])
     elif cmd == 'delete':
         if length == 4:
             #print(_localSearchFile(method[2], method[3]))
-            if _deleteFile(_checkUploadMetafileID(method[2], method[3])) == 1 :
-                os.remove(method[3]+'/'+PREFIX_FILENAME+method[2])
+             _deleteFile(_checkUploadMetafileID(method[2], method[3]))
+            #if _deleteFile(_checkUploadMetafileID(method[2], method[3]))
+                #os.remove(method[3]+'/'+PREFIX_FILENAME+method[2])
         elif length == 3:
             #print(_checkUploadMetafileID(method[2], os.getcwd()))
-            if _deleteFile(_checkUploadMetafileID(method[2], os.getcwd())) == 1 :
-                os.remove(os.getcwd()+'/'+PREFIX_FILENAME+method[2])
+            _deleteFile(_listFiles(method[2]))
         else:
             print("ERROR : ./main.py delete [filename] [path of file]")
     elif cmd == 'download':
@@ -172,7 +183,7 @@ def main(method, length) :
 if __name__ == '__main__' :
 
     if len(sys.argv) >= 2 :
-        print(len(sys.argv))
+        #print(len(sys.argv))
         main(sys.argv, len(sys.argv))
 
 #uploadFile('unnamed.txt', os.getcwd(),'text/csv')
